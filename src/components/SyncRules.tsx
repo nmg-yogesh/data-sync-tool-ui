@@ -47,11 +47,11 @@ const SyncRules: React.FC<Props> = ({
                 <select
                   value={newRule.table_name}
                   onChange={(e) => setNewRule({ ...newRule, table_name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-black-800"
                 >
-                  <option value="">Select Table</option>
+                  <option className="text-black text-black-800" value="">Select Table</option>
                   {Object.keys(sourceTables).map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                    <option className="text-black text-black-800" key={t} value={t}>{t}</option>
                   ))}
                 </select>
               </div>
@@ -61,12 +61,12 @@ const SyncRules: React.FC<Props> = ({
                 <select
                   value={newRule.primary_key}
                   onChange={(e) => setNewRule({ ...newRule, primary_key: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-black-800"
                   disabled={!newRule.table_name}
                 >
-                  <option value="">Select Primary Key</option>
+                  <option value="" className="text-black text-black-800">Select Primary Key</option>
                   {newRule.table_name && sourceTables[newRule.table_name]?.map((col) => (
-                    <option key={col.column_name} value={col.column_name}>{col.column_name}</option>
+                    <option key={col.column_name} value={col.column_name} className="text-black text-black-800">{col.column_name}</option>
                   ))}
                 </select>
               </div>
@@ -76,10 +76,10 @@ const SyncRules: React.FC<Props> = ({
                 <select
                   value={newRule.sync_type}
                   onChange={(e) => setNewRule({ ...newRule, sync_type: e.target.value as 'full' | 'incremental' })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-black text-black-800"
                 >
-                  <option value="full">Full Sync</option>
-                  <option value="incremental">Incremental</option>
+                  <option value="full" className="text-black text-black-800">Full Sync</option>
+                  <option value="incremental"className="text-black text-black-800">Incremental</option>
                 </select>
               </div>
 

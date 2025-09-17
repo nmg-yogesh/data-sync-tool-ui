@@ -72,7 +72,27 @@ const EnhancedConnectionForm: React.FC<Props> = ({
   };
 
   const handleFieldChange = (fieldName: string, value: any) => {
-    const updatedData = { ...formData, [fieldName]: value };
+    const updatedData = { ...formData };
+
+    // Handle nested field names (e.g., 'tunnel.enabled')
+    if (fieldName.includes('.')) {
+      const parts = fieldName.split('.');
+      let current = updatedData;
+
+      // Navigate to the parent object, creating nested objects as needed
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) {
+          current[parts[i]] = {};
+        }
+        current = current[parts[i]];
+      }
+
+      // Set the final value
+      current[parts[parts.length - 1]] = value;
+    } else {
+      updatedData[fieldName] = value;
+    }
+
     setFormData(updatedData);
     setConnection(updatedData as ConnectionConfig);
   };
@@ -101,9 +121,32 @@ const EnhancedConnectionForm: React.FC<Props> = ({
     await onSave(config, type);
   };
 
+  const getFieldValue = (fieldName: string) => {
+    if (fieldName.includes('.')) {
+      const parts = fieldName.split('.');
+      let current = formData;
+      for (const part of parts) {
+        if (current && typeof current === 'object') {
+          current = current[part];
+        } else {
+          return '';
+        }
+      }
+      return current || '';
+    }
+    return formData[fieldName] || '';
+  };
+
+  const shouldShowField = (field: any) => {
+    if (!field.dependsOn) return true;
+
+    const dependentValue = getFieldValue(field.dependsOn);
+    return Boolean(dependentValue);
+  };
+
   const renderField = (field: any) => {
-    const value = formData[field.name] || '';
-    
+    const value = getFieldValue(field.name);
+
     switch (field.type) {
       case 'text':
       case 'password':
@@ -266,20 +309,24 @@ const EnhancedConnectionForm: React.FC<Props> = ({
           )}
 
           {/* Dynamic Fields */}
-          {currentConfig.configFields.map((field) => (
-            <div key={field.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {field.label} {field.required && '*'}
-              </label>
-              {renderField(field)}
-              {field.description && (
-                <div className="flex items-start gap-1 mt-1">
-                  <Info className="w-3 h-3 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-gray-500">{field.description}</p>
-                </div>
-              )}
-            </div>
-          ))}
+          {currentConfig.configFields.map((field) => {
+            if (!shouldShowField(field)) return null;
+
+            return (
+              <div key={field.name}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {field.label} {field.required && '*'}
+                </label>
+                {renderField(field)}
+                {field.description && (
+                  <div className="flex items-start gap-1 mt-1">
+                    <Info className="w-3 h-3 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-500">{field.description}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           {/* Test Result */}
           {testResult && (

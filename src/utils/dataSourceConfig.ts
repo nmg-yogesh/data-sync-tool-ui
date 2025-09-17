@@ -1,4 +1,4 @@
-import { DataSourceType, DataSourceTypeInfo, DataSourceFormField, DataSourceCapabilities } from '../types';
+import { DataSourceType, DataSourceTypeInfo, DataSourceFormField, DataSourceCapabilities, ConnectionConfig } from '../types';
 
 export const DATA_SOURCE_CONFIGS: Record<DataSourceType, DataSourceTypeInfo> = {
   [DataSourceType.POSTGRESQL]: {
@@ -249,6 +249,58 @@ export const DATA_SOURCE_CONFIGS: Record<DataSourceType, DataSourceTypeInfo> = {
         required: false,
         defaultValue: true,
         description: 'Recommended for secure connections. Most RDS instances require SSL.'
+      },
+      {
+        name: 'tunnel.enabled',
+        label: 'Enable SSH Tunnel',
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        description: 'Use SSH tunnel to connect through a bastion host'
+      },
+      {
+        name: 'tunnel.sshHost',
+        label: 'SSH Host',
+        type: 'text',
+        required: false,
+        placeholder: 'bastion.example.com',
+        description: 'SSH bastion host or jump server',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPort',
+        label: 'SSH Port',
+        type: 'number',
+        required: false,
+        defaultValue: 22,
+        description: 'SSH port (default: 22)',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshUser',
+        label: 'SSH Username',
+        type: 'text',
+        required: false,
+        placeholder: 'ec2-user',
+        description: 'SSH username for bastion host',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPrivateKey',
+        label: 'SSH Private Key',
+        type: 'textarea',
+        required: false,
+        placeholder: '-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----',
+        description: 'SSH private key in PEM format (alternative to password)',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPassword',
+        label: 'SSH Password',
+        type: 'password',
+        required: false,
+        description: 'SSH password (alternative to private key)',
+        dependsOn: 'tunnel.enabled'
       }
     ]
   },
@@ -323,6 +375,58 @@ export const DATA_SOURCE_CONFIGS: Record<DataSourceType, DataSourceTypeInfo> = {
         required: false,
         defaultValue: true,
         description: 'Recommended for secure connections. Most RDS instances require SSL.'
+      },
+      {
+        name: 'tunnel.enabled',
+        label: 'Enable SSH Tunnel',
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        description: 'Use SSH tunnel to connect through a bastion host'
+      },
+      {
+        name: 'tunnel.sshHost',
+        label: 'SSH Host',
+        type: 'text',
+        required: false,
+        placeholder: 'bastion.example.com',
+        description: 'SSH bastion host or jump server',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPort',
+        label: 'SSH Port',
+        type: 'number',
+        required: false,
+        defaultValue: 22,
+        description: 'SSH port (default: 22)',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshUser',
+        label: 'SSH Username',
+        type: 'text',
+        required: false,
+        placeholder: 'ec2-user',
+        description: 'SSH username for bastion host',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPrivateKey',
+        label: 'SSH Private Key',
+        type: 'textarea',
+        required: false,
+        placeholder: '-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----',
+        description: 'SSH private key in PEM format (alternative to password)',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPassword',
+        label: 'SSH Password',
+        type: 'password',
+        required: false,
+        description: 'SSH password (alternative to private key)',
+        dependsOn: 'tunnel.enabled'
       }
     ]
   },
@@ -397,6 +501,58 @@ export const DATA_SOURCE_CONFIGS: Record<DataSourceType, DataSourceTypeInfo> = {
         required: false,
         defaultValue: true,
         description: 'Recommended for secure connections. Most RDS instances require encryption.'
+      },
+      {
+        name: 'tunnel.enabled',
+        label: 'Enable SSH Tunnel',
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        description: 'Use SSH tunnel to connect through a bastion host'
+      },
+      {
+        name: 'tunnel.sshHost',
+        label: 'SSH Host',
+        type: 'text',
+        required: false,
+        placeholder: 'bastion.example.com',
+        description: 'SSH bastion host or jump server',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPort',
+        label: 'SSH Port',
+        type: 'number',
+        required: false,
+        defaultValue: 22,
+        description: 'SSH port (default: 22)',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshUser',
+        label: 'SSH Username',
+        type: 'text',
+        required: false,
+        placeholder: 'ec2-user',
+        description: 'SSH username for bastion host',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPrivateKey',
+        label: 'SSH Private Key',
+        type: 'textarea',
+        required: false,
+        placeholder: '-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----',
+        description: 'SSH private key in PEM format (alternative to password)',
+        dependsOn: 'tunnel.enabled'
+      },
+      {
+        name: 'tunnel.sshPassword',
+        label: 'SSH Password',
+        type: 'password',
+        required: false,
+        description: 'SSH password (alternative to private key)',
+        dependsOn: 'tunnel.enabled'
       }
     ]
   },

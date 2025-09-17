@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth, withAuth } from '../contexts/AuthContext';
+import { AuthHeader } from '../components/AuthHeader';
 import StatusCards from '../components/StatusCards';
 import ControlPanel from '../components/ControlPanel';
 import Tabs from '../components/Tabs';
@@ -7,6 +9,7 @@ import ConnectionForm from '../components/ConnectionForm';
 import Dashboard from '../components/Dashboard';
 import SyncRules from '../components/SyncRules';
 import TablesView from '../components/TablesView';
+import { BulkTransferManager } from '../components/BulkTransferManager';
 import { Database, ArrowRight, Sparkles } from 'lucide-react';
 
 import { Api } from '../api';
@@ -44,7 +47,7 @@ const DatabaseSyncUI: React.FC = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'connections' | 'dashboard' | 'sync-rules' | 'tables'>('connections');
+  const [activeTab, setActiveTab] = useState<'connections' | 'dashboard' | 'sync-rules' | 'tables' | 'bulk-transfer'>('connections');
   const [testResults, setTestResults] = useState<Record<string, TestResult | undefined>>({});
 
   // initial + polling
@@ -52,6 +55,7 @@ const DatabaseSyncUI: React.FC = () => {
     refreshAll();
     const interval = setInterval(() => {
       refreshStatusOnly();
+      console.log('Polling...');
     }, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -81,20 +85,20 @@ const DatabaseSyncUI: React.FC = () => {
         setSourceConnection((prev) => ({
           ...prev,
           name: connectionStatus.source_config?.name || 'Source Database',
-          host: connectionStatus.source_config.host,
-          port: connectionStatus.source_config.port,
-          database: connectionStatus.source_config.database,
-          user: connectionStatus.source_config.user,
+          host: connectionStatus.source_config?.host,
+          port: connectionStatus.source_config?.port,
+          database: connectionStatus.source_config?.database,
+          user: connectionStatus.source_config?.user,
         }));
       }
       if (connectionStatus?.dest_config) {
         setDestConnection((prev) => ({
           ...prev,
           name: connectionStatus.dest_config?.name || 'Destination Database',
-          host: connectionStatus.dest_config.host,
-          port: connectionStatus.dest_config.port,
-          database: connectionStatus.dest_config.database,
-          user: connectionStatus.dest_config.user,
+          host: connectionStatus.dest_config?.host,
+          port: connectionStatus.dest_config?.port,
+          database: connectionStatus.dest_config?.database,
+          user: connectionStatus.dest_config?.user,
         }));
       }
     })();
@@ -231,8 +235,13 @@ const DatabaseSyncUI: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Database Sync Manager</h1>
-          <p className="text-gray-600">Manage CDC synchronization between source and destination databases</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Database Sync Manager</h1>
+              <p className="text-gray-600">Manage CDC synchronization between source and destination databases</p>
+            </div>
+            <AuthHeader />
+          </div>
         </div>
 
         <StatusCards syncStatus={syncStatus} connectionStatus={connectionStatus} />
@@ -296,9 +305,13 @@ const DatabaseSyncUI: React.FC = () => {
             destTables={destTables}
           />
         )}
+
+        {activeTab === 'bulk-transfer' && (
+          <BulkTransferManager />
+        )}
       </div>
     </div>
   );
 };
 
-export default DatabaseSyncUI;
+export default withAuth(DatabaseSyncUI);

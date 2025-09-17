@@ -6,7 +6,7 @@ interface Props {
   tabs?: string[];
 }
 
-const Tabs: React.FC<Props> = ({ active, setActive, tabs = ['connections', 'dashboard', 'sync-rules', 'tables'] }) => {
+const Tabs: React.FC<Props> = ({ active, setActive, tabs = ['connections', 'dashboard', 'sync-rules', 'tables', 'bulk-transfer'] }) => {
   return (
     <div className="mb-6">
       <nav className="flex space-x-1">

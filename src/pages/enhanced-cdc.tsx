@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth, withAuth } from '../contexts/AuthContext';
+import { AuthHeader } from '../components/AuthHeader';
 import { AlertCircle, CheckCircle, Database, ArrowRight, Settings, Play, Pause } from 'lucide-react';
 import { 
   ConnectionConfig, 
@@ -26,6 +29,7 @@ const EnhancedCDCPage: React.FC = () => {
 
   useEffect(() => {
     fetchConnectionStatus();
+    console.log('Connection status:', connectionStatus);
     fetchSyncStatus();
   }, []);
 
@@ -144,13 +148,18 @@ const EnhancedCDCPage: React.FC = () => {
             <div className="flex items-center">
               <Database className="h-8 w-8 text-blue-600" />
               <div className="ml-3">
-                <h1 className="text-3xl font-bold text-gray-900">Multi-Source CDC Tool</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  <Link href="/" className="bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors flex items-center gap-2">
+                      Multi-Source CDC Tool
+                  </Link>
+                  
+                  </h1>
                 <p className="text-base text-gray-600 font-medium">Change Data Capture across multiple data sources</p>
               </div>
             </div>
             
-            {/* Sync Status */}
-            <div className="flex items-center gap-4">
+            {/* Sync Status and Auth */}
+            <div className="flex items-center gap-6">
               {syncStatus && (
                 <div className="flex items-center gap-2">
                   {syncStatus.sync_running ? (
@@ -163,7 +172,7 @@ const EnhancedCDCPage: React.FC = () => {
                   </span>
                 </div>
               )}
-              
+
               <button
                 onClick={handleStartSync}
                 disabled={!isReadyForSync || loading}
@@ -172,6 +181,8 @@ const EnhancedCDCPage: React.FC = () => {
                 <Play className="w-4 h-4" />
                 Start Sync
               </button>
+
+              <AuthHeader />
             </div>
           </div>
         </div>
@@ -323,4 +334,4 @@ const EnhancedCDCPage: React.FC = () => {
   );
 };
 
-export default EnhancedCDCPage;
+export default withAuth(EnhancedCDCPage);

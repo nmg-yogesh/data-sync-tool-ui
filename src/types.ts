@@ -138,6 +138,124 @@ export interface SyncRule {
   last_sync?: string | null;
 }
 
+// Advanced mapping interfaces
+export interface ColumnMapping {
+  source_column: string;
+  destination_column: string;
+  transform?: string; // Optional transformation function
+  default_value?: any; // Default value if source is null
+}
+
+export interface JoinConfig {
+  table: string;
+  type: 'INNER' | 'LEFT' | 'RIGHT';
+  on: string; // Join condition, e.g., "users.id = orders.user_id"
+  source_column?: string; // Column from main table for JOIN condition
+  join_column?: string; // Column from joined table for JOIN condition
+  columns: ColumnMapping[]; // Columns to include from joined table
+}
+
+export interface TableMapping {
+  id: string; // Unique identifier for the mapping
+  name: string; // Human-readable name
+  source_table: string;
+  destination_table: string;
+  primary_key: string;
+  sync_type: 'full' | 'incremental';
+  column_mappings: ColumnMapping[];
+  joins?: JoinConfig[]; // Optional joins with other tables
+  where_clause?: string; // Optional WHERE condition
+  last_sync: Date | null;
+  enabled: boolean;
+}
+
+// Bulk Transfer Types
+export interface BulkTransferRequest {
+  tables: string[]; // Array of table names to transfer
+  create_tables: boolean; // Whether to create tables if they don't exist
+  transfer_data: boolean; // Whether to transfer data
+  overwrite_existing: boolean; // Whether to overwrite existing tables
+}
+
+export interface BulkTransferProgress {
+  transfer_id: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  total_tables: number;
+  completed_tables: number;
+  current_table?: string;
+  current_operation?: 'creating_table' | 'transferring_data' | 'completed';
+  total_records?: number;
+  transferred_records?: number;
+  start_time: Date;
+  end_time?: Date;
+  errors: string[];
+  table_progress: TableTransferProgress[];
+}
+
+export interface TableTransferProgress {
+  table_name: string;
+  status: 'pending' | 'creating_table' | 'transferring_data' | 'completed' | 'failed';
+  total_records?: number;
+  transferred_records?: number;
+  error?: string;
+  start_time?: Date;
+  end_time?: Date;
+}
+
+export interface SourceTableInfo {
+  table_name: string;
+  column_count: number;
+  row_count: number;
+}
+
+export interface DestinationTableStatus {
+  table_name: string;
+  exists: boolean;
+  column_count?: number;
+  row_count?: number;
+  error?: string;
+}
+
+// Authentication Types
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: 'admin' | 'user';
+  created_at?: string;
+  last_login?: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  token?: string;
+  refreshToken?: string;
+  user?: User;
+  message?: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  role?: 'admin' | 'user';
+}
+
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  register: (userData: RegisterRequest) => Promise<boolean>;
+  logout: () => void;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
 // Legacy interface for backward compatibility
 export interface LegacyConnectionConfig {
   name: string;
@@ -185,6 +303,7 @@ export interface DataSourceFormField {
   defaultValue?: any;
   options?: { value: string; label: string; }[];
   placeholder?: string;
+  dependsOn?: string; // Field name that this field depends on
 }
 
 export interface DataSourceTypeInfo {
