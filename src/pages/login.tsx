@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
         setError('Invalid username or password');
       }
     } catch (error) {
-      setError('Login failed. Please try again.');
+      setError('Login failed. Please try again.'+error);
     } finally {
       setIsSubmitting(false);
     }
@@ -161,22 +161,13 @@ const LoginPage: React.FC = () => {
             {/* Register Link */}
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
                   Sign up here
                 </Link>
               </p>
             </div>
           </form>
-        </div>
-
-        {/* Demo Credentials */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials</h3>
-          <div className="text-xs text-blue-700 space-y-1">
-            <div><strong>Admin:</strong> username=admin, password=admin123</div>
-            <div><strong>User:</strong> username=user, password=user123</div>
-          </div>
         </div>
 
         {/* Footer */}

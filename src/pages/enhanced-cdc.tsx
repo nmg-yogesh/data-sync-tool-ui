@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { useAuth, withAuth } from '../contexts/AuthContext';
 import { AuthHeader } from '../components/AuthHeader';
 import { AlertCircle, CheckCircle, Database, ArrowRight, Settings, Play, Pause } from 'lucide-react';
-import { 
-  ConnectionConfig, 
-  ConnectionStatus, 
-  DBType, 
-  TestResult, 
+import {
+  ConnectionConfig,
+  ConnectionStatus,
+  DBType,
+  TestResult,
   SyncStatus,
-  DataSourceType 
+  DataSourceType
 } from '../types';
 import { Api } from '../api';
 import EnhancedConnectionForm from '../components/EnhancedConnectionForm';
@@ -37,7 +37,7 @@ const EnhancedCDCPage: React.FC = () => {
     try {
       const status = await Api.fetchConnectionStatus();
       setConnectionStatus(status);
-      
+
       // If we have existing connections, hide selectors and show forms
       if (status.source_config) {
         setSourceConnection(status.source_config as ConnectionConfig);
@@ -67,8 +67,11 @@ const EnhancedCDCPage: React.FC = () => {
       const result = await Api.testConnectionConfig(config);
       setTestResults(prev => ({ ...prev, [type]: result }));
       return result;
-    } catch (error: any) {
-      const errorResult = { success: false, message: error.message || 'Connection test failed' };
+    } catch (error) {
+      const errorResult = {
+        success: false,
+        message: error instanceof Error ? error.message ?? 'Connection test failed' : 'Connection test failed'
+      };
       setTestResults(prev => ({ ...prev, [type]: errorResult }));
       return errorResult;
     } finally {
@@ -81,7 +84,7 @@ const EnhancedCDCPage: React.FC = () => {
     try {
       await Api.saveConnectionConfig(config, type);
       await fetchConnectionStatus();
-      
+
       // Hide selector and show form
       if (type === 'source') {
         setShowSourceSelector(false);
@@ -150,14 +153,14 @@ const EnhancedCDCPage: React.FC = () => {
               <div className="ml-3">
                 <h1 className="text-3xl font-bold text-gray-900">
                   <Link href="/" className="bg-white text-blue-600 px-4 py-2 rounded-md font-medium hover:bg-blue-50 transition-colors flex items-center gap-2">
-                      Multi-Source CDC Tool
+                    Multi-Source CDC Tool
                   </Link>
-                  
-                  </h1>
+
+                </h1>
                 <p className="text-base text-gray-600 font-medium">Change Data Capture across multiple data sources</p>
               </div>
             </div>
-            
+
             {/* Sync Status and Auth */}
             <div className="flex items-center gap-6">
               {syncStatus && (
@@ -195,15 +198,14 @@ const EnhancedCDCPage: React.FC = () => {
           {/* Source */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                connectionStatus.source?.connected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-              }`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${connectionStatus.source?.connected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                }`}>
                 1
               </div>
               <h2 className="text-xl font-bold text-gray-900">Source Database</h2>
               {connectionStatus.source?.connected && <CheckCircle className="w-5 h-5 text-green-500" />}
             </div>
-            
+
             {showSourceSelector ? (
               <DataSourceSelector
                 onSelect={handleSourceTypeSelect}
@@ -223,7 +225,7 @@ const EnhancedCDCPage: React.FC = () => {
                 onSave={handleSave}
               />
             )}
-            
+
             {!showSourceSelector && (
               <button
                 onClick={() => resetConnection('source')}
@@ -242,15 +244,14 @@ const EnhancedCDCPage: React.FC = () => {
           {/* Destination */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                connectionStatus.destination?.connected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
-              }`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${connectionStatus.destination?.connected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                }`}>
                 2
               </div>
               <h2 className="text-xl font-bold text-gray-900">Destination Database</h2>
               {connectionStatus.destination?.connected && <CheckCircle className="w-5 h-5 text-green-500" />}
             </div>
-            
+
             {showDestSelector ? (
               <DataSourceSelector
                 onSelect={handleDestTypeSelect}
@@ -270,7 +271,7 @@ const EnhancedCDCPage: React.FC = () => {
                 onSave={handleSave}
               />
             )}
-            
+
             {!showDestSelector && (
               <button
                 onClick={() => resetConnection('destination')}
@@ -289,20 +290,20 @@ const EnhancedCDCPage: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900">Sync Status</h3>
               <Settings className="w-5 h-5 text-gray-400" />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-blue-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{syncStatus.total_records_synced}</div>
                 <div className="text-sm font-semibold text-blue-800">Records Synced</div>
               </div>
-              
+
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
                   {syncStatus.sync_running ? 'Running' : 'Ready'}
                 </div>
                 <div className="text-sm font-semibold text-green-800">Status</div>
               </div>
-              
+
               <div className="bg-purple-50 p-4 rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">
                   {syncStatus.last_sync ? new Date(syncStatus.last_sync).toLocaleTimeString() : 'Never'}
@@ -310,7 +311,7 @@ const EnhancedCDCPage: React.FC = () => {
                 <div className="text-sm font-semibold text-purple-800">Last Sync</div>
               </div>
             </div>
-            
+
             {syncStatus.errors && syncStatus.errors.length > 0 && (
               <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
                 <div className="flex items-center gap-2">
@@ -328,7 +329,7 @@ const EnhancedCDCPage: React.FC = () => {
         )}
 
         {/* Sync Management */}
-        <SyncManager isVisible={isReadyForSync} />
+        <SyncManager isVisible={Boolean(isReadyForSync)} />
       </div>
     </div>
   );

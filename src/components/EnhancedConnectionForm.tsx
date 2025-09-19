@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle, Database, Cloud, FileText, Globe, Info } from 'lucide-react';
-import { 
-  ConnectionConfig, 
-  DataSourceType, 
-  DBType, 
+import {
+  ConnectionConfig,
+  DataSourceType,
+  DBType,
   TestResult,
-  ConnectionStatus,
-  DataSourceTypeInfo
+  ConnectionStatus
 } from '../types';
 import { getDataSourceConfig, getDataSourcesByCategory, createDefaultConfig } from '../utils/dataSourceConfig';
-import { Api } from '../api';
 
 interface Props {
   title: string;
@@ -47,8 +45,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
   const [selectedType, setSelectedType] = useState<DataSourceType | null>(
     connection?.type || null
   );
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   const categories = getDataSourcesByCategory();
   const currentConfig = selectedType ? getDataSourceConfig(selectedType) : null;
@@ -71,20 +68,20 @@ const EnhancedConnectionForm: React.FC<Props> = ({
     setConnection(defaultConfig as ConnectionConfig);
   };
 
-  const handleFieldChange = (fieldName: string, value: any) => {
+  const handleFieldChange = (fieldName: string, value: string | number | boolean) => {
     const updatedData = { ...formData };
 
     // Handle nested field names (e.g., 'tunnel.enabled')
     if (fieldName.includes('.')) {
       const parts = fieldName.split('.');
-      let current = updatedData;
+      let current: Record<string, unknown> = updatedData;
 
       // Navigate to the parent object, creating nested objects as needed
       for (let i = 0; i < parts.length - 1; i++) {
-        if (!current[parts[i]]) {
+        if (!current[parts[i]] || typeof current[parts[i]] !== 'object') {
           current[parts[i]] = {};
         }
-        current = current[parts[i]];
+        current = current[parts[i]] as Record<string, unknown>;
       }
 
       // Set the final value
@@ -103,7 +100,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
     const config: ConnectionConfig = {
       ...formData,
       type: selectedType,
-      name: formData.name || `${getDataSourceConfig(selectedType).name} Connection`
+      name: (typeof formData.name === 'string' ? formData.name : '') || `${getDataSourceConfig(selectedType).name} Connection`
     };
     
     await onTest(config, type);
@@ -115,36 +112,37 @@ const EnhancedConnectionForm: React.FC<Props> = ({
     const config: ConnectionConfig = {
       ...formData,
       type: selectedType,
-      name: formData.name || `${getDataSourceConfig(selectedType).name} Connection`
+      name: (typeof formData.name === 'string' ? formData.name : '') || `${getDataSourceConfig(selectedType).name} Connection`
     };
     
     await onSave(config, type);
   };
 
-  const getFieldValue = (fieldName: string) => {
+  const getFieldValue = (fieldName: string): string | number | boolean => {
     if (fieldName.includes('.')) {
       const parts = fieldName.split('.');
-      let current = formData;
+      let current: unknown = formData;
       for (const part of parts) {
-        if (current && typeof current === 'object') {
-          current = current[part];
+        if (current && typeof current === 'object' && current !== null) {
+          current = (current as Record<string, unknown>)[part];
         } else {
           return '';
         }
       }
-      return current || '';
+      return current !== undefined ? (current as string | number | boolean) : '';
     }
-    return formData[fieldName] || '';
+    const value = formData[fieldName];
+    return value !== undefined ? (value as string | number | boolean) : '';
   };
 
-  const shouldShowField = (field: any) => {
+  const shouldShowField = (field: { dependsOn?: string; dependsOnValue?: string | number | boolean }) => {
     if (!field.dependsOn) return true;
 
     const dependentValue = getFieldValue(field.dependsOn);
     return Boolean(dependentValue);
   };
 
-  const renderField = (field: any) => {
+  const renderField = (field: { name: string; type: string; label: string; placeholder?: string; required?: boolean; options?: Array<{ value: string; label: string }> }) => {
     const value = getFieldValue(field.name);
 
     switch (field.type) {
@@ -153,7 +151,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
         return (
           <input
             type={field.type}
-            value={value}
+            value={String(value)}
             onChange={(e) => handleFieldChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
@@ -165,7 +163,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
         return (
           <input
             type="number"
-            value={value}
+            value={typeof value === 'number' ? value : ''}
             onChange={(e) => handleFieldChange(field.name, parseInt(e.target.value) || '')}
             placeholder={field.placeholder}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
@@ -178,24 +176,24 @@ const EnhancedConnectionForm: React.FC<Props> = ({
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={value || false}
+              checked={Boolean(value)}
               onChange={(e) => handleFieldChange(field.name, e.target.checked)}
               className="mr-2"
             />
-            <span className="text-sm text-gray-600">{field.description}</span>
+            <span className="text-sm text-gray-600">{(field as unknown as { description: string }).description || ''}</span>
           </label>
         );
       
       case 'select':
         return (
           <select
-            value={value}
+            value={String(value)}
             onChange={(e) => handleFieldChange(field.name, e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
             required={field.required}
           >
             <option value="">Select...</option>
-            {field.options?.map((option: any) => (
+            {field.options?.map((option: { value: string; label: string }) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -206,7 +204,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
       case 'textarea':
         return (
           <textarea
-            value={value}
+            value={String(value)}
             onChange={(e) => handleFieldChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             rows={4}
@@ -282,7 +280,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
             </label>
             <input
               type="text"
-              value={formData.name || ''}
+              value={String(formData.name || '')}
               onChange={(e) => handleFieldChange('name', e.target.value)}
               placeholder={`${currentConfig.name} Connection`}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
@@ -363,7 +361,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
                     <div>
                       <strong>Common Issues:</strong>
                       <ul className="mt-1 ml-4 space-y-1">
-                        <li>• <strong>Timeout:</strong> Check security groups allow inbound traffic on port {formData.port || '5432'}</li>
+                        <li>• <strong>Timeout:</strong> Check security groups allow inbound traffic on port {String(formData.port || '5432')}</li>
                         <li>• <strong>Connection Refused:</strong> Ensure RDS instance is running and publicly accessible</li>
                         <li>• <strong>DNS Issues:</strong> Verify the RDS endpoint URL is correct</li>
                         <li>• <strong>Authentication:</strong> Double-check username and password</li>
@@ -373,7 +371,7 @@ const EnhancedConnectionForm: React.FC<Props> = ({
                       <strong>Security Group Settings:</strong>
                       <ul className="mt-1 ml-4 space-y-1">
                         <li>• Type: PostgreSQL (or Custom TCP)</li>
-                        <li>• Port: {formData.port || '5432'}</li>
+                        <li>• Port: {String(formData.port || '5432')}</li>
                         <li>• Source: Your IP address or 0.0.0.0/0 (for testing)</li>
                       </ul>
                     </div>
@@ -404,13 +402,13 @@ const EnhancedConnectionForm: React.FC<Props> = ({
                       <ul className="mt-1 ml-4 space-y-1">
                         <li>• This is a common issue with Supabase IPv6 addresses</li>
                         <li>• The adapter has been configured to use IPv4 - try connecting again</li>
-                        <li>• If the issue persists, check your network's IPv6 configuration</li>
+                        <li>• If the issue persists, check your network&apos;s IPv6 configuration</li>
                       </ul>
                     </div>
                     <div>
                       <strong>Connection Settings:</strong>
                       <ul className="mt-1 ml-4 space-y-1">
-                        <li>• Host: Use your Supabase project's database host (e.g., db.xxx.supabase.co)</li>
+                        <li>• Host: Use your Supabase project&apos;s database host (e.g., db.xxx.supabase.co)</li>
                         <li>• Port: 5432 (default PostgreSQL port)</li>
                         <li>• Database: postgres (default) or your custom database name</li>
                         <li>• SSL: Always enabled for Supabase (automatically configured)</li>
@@ -420,9 +418,9 @@ const EnhancedConnectionForm: React.FC<Props> = ({
                       <strong>Finding Your Credentials:</strong>
                       <ul className="mt-1 ml-4 space-y-1">
                         <li>• Go to Supabase Dashboard → Settings → Database</li>
-                        <li>• Host: Found in "Connection string" section</li>
+                        <li>• Host: Found in &quot;Connection string&quot; section</li>
                         <li>• Password: Use your database password (not API key)</li>
-                        <li>• Username: Usually "postgres" unless you created a custom user</li>
+                        <li>• Username: Usually &quot;postgres&quot; unless you created a custom user</li>
                       </ul>
                     </div>
                     <div>

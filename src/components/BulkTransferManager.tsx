@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   BulkTransferRequest, 
   BulkTransferProgress, 
@@ -23,29 +23,7 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadSourceTables();
-  }, []);
 
-  useEffect(() => {
-    if (selectedTables.length > 0) {
-      checkDestinationTables();
-    } else {
-      setDestinationStatus([]);
-    }
-  }, [selectedTables]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (activeTransfer && (activeTransfer.status === 'pending' || activeTransfer.status === 'running')) {
-      interval = setInterval(() => {
-        updateTransferProgress();
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [activeTransfer]);
 
   const loadSourceTables = async () => {
     try {
@@ -58,14 +36,14 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
       } else {
         setError(data.message || 'Failed to load source tables');
       }
-    } catch (error: any) {
-      setError(error.message || 'Failed to load source tables');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to load source tables');
     } finally {
       setLoading(false);
     }
   };
 
-  const checkDestinationTables = async () => {
+  const checkDestinationTables = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:8080/api/bulk-transfer/check-destination', {
         method: 'POST',
@@ -73,14 +51,14 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
         body: JSON.stringify({ tables: selectedTables })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         setDestinationStatus(data.table_status);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error checking destination tables:', error);
     }
-  };
+  }, [selectedTables]);
 
   const startBulkTransfer = async () => {
     if (selectedTables.length === 0) {
@@ -112,8 +90,8 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
       } else {
         setError(data.message || 'Failed to start bulk transfer');
       }
-    } catch (error: any) {
-      setError(error.message || 'Failed to start bulk transfer');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'Failed to start bulk transfer');
     } finally {
       setLoading(false);
     }
@@ -127,16 +105,41 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
       if (data.success) {
         setActiveTransfer(data.progress);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error polling transfer progress:', error);
     }
   };
 
-  const updateTransferProgress = () => {
+  const updateTransferProgress = useCallback(() => {
     if (activeTransfer) {
       pollTransferProgress(activeTransfer.transfer_id);
     }
-  };
+  }, [activeTransfer]);
+
+  // Effects
+  useEffect(() => {
+    loadSourceTables();
+  }, []);
+
+  useEffect(() => {
+    if (selectedTables.length > 0) {
+      checkDestinationTables();
+    } else {
+      setDestinationStatus([]);
+    }
+  }, [selectedTables, checkDestinationTables]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeTransfer && (activeTransfer.status === 'pending' || activeTransfer.status === 'running')) {
+      interval = setInterval(() => {
+        updateTransferProgress();
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeTransfer, updateTransferProgress]);
 
   const handleTableSelection = (tableName: string, selected: boolean) => {
     if (selected) {
@@ -289,7 +292,7 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
                   onChange={(e) => setTransferOptions(prev => ({ ...prev, create_tables: e.target.checked }))}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm text-gray-700">Create tables if they don't exist</span>
+                <span className="ml-2 text-sm text-gray-700">Create tables if they don&apos;t exist</span>
               </label>
               
               <label className="flex items-center">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TableMapping, ColumnMapping, JoinConfig } from '../types';
+import { TableMapping, ColumnMapping } from '../types';
 import { API_BASE_URL } from '@/api';
 
 interface TableInfo {
@@ -13,7 +13,7 @@ interface TableInfo {
 }
 
 interface MappingManagerProps {
-  onMappingExecuted?: (result: any) => void;
+  onMappingExecuted?: (result: { success: boolean; message: string; data?: unknown }) => void;
 }
 
 export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecuted }) => {
@@ -68,9 +68,9 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
         console.error('Source tables failed:', data.message);
         setError(`Failed to load source tables: ${data.message}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load source tables:', err);
-      setError(`Failed to load source tables: ${err.message}`);
+      setError(`Failed to load source tables: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -87,9 +87,9 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
         console.error('Destination tables failed:', data.message);
         setError(`Failed to load destination tables: ${data.message}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load destination tables:', err);
-      setError(`Failed to load destination tables: ${err.message}`);
+      setError(`Failed to load destination tables: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -104,8 +104,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -127,8 +127,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -150,8 +150,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -187,8 +187,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -220,7 +220,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
     }));
   };
 
-  const updateColumnMapping = (index: number, field: keyof ColumnMapping, value: any) => {
+  const updateColumnMapping = (index: number, field: keyof ColumnMapping, value: string | number | boolean | null) => {
     setNewMapping(prev => ({
       ...prev,
       column_mappings: prev.column_mappings?.map((mapping, i) =>
@@ -282,8 +282,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -318,7 +318,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
     }));
   };
 
-  const updateJoin = (index: number, field: string, value: any) => {
+  const updateJoin = (index: number, field: string, value: string | number | boolean) => {
     console.log('Updating join:', index, field, value);
     setNewAdvancedMapping(prev => ({
       ...prev,
@@ -381,7 +381,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
     }));
   };
 
-  const updateJoinColumn = (joinIndex: number, columnIndex: number, field: string, value: any) => {
+  const updateJoinColumn = (joinIndex: number, columnIndex: number, field: string, value: string | number | boolean | null) => {
     setNewAdvancedMapping(prev => ({
       ...prev,
       joins: prev.joins?.map((join, i) =>
@@ -408,7 +408,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
   };
 
 
-  const getDestinationJoinTableColumns = (tableName: string) => {
+  const getDestinationJoinTableColumns = () => {
     const table = destinationTables.find(t => t.table_name === newAdvancedMapping.destination_table);
     return table?.columns || [];
   };
@@ -437,30 +437,30 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
     }
   };
 
-  const filterColumnsByJoinType = (souceTable: any, destinationTable: any, joinType?: string) => {
+  const filterColumnsByJoinType = (_souceTable: unknown, _destinationTable: unknown, _joinType?: string) => {
     // For now, return all columns regardless of JOIN type
     // The JOIN type is mainly used for SQL generation, not column filtering
     // In the future, you could implement specific filtering logic if needed
-    let columns:Array<string> = [];
+    let columns: Array<{ column_name: string; data_type?: string }> = [];
 
     console.log('filterColumnsByJoinType called with columns:', columns.map((c) => c.column_name));
 
-    console.log(`Filtering columns for JOIN type: ${joinType}, available columns:`, columns.map(c => c.column_name));
+    console.log(`Filtering columns for JOIN type: ${_joinType}, available columns:`, columns.map((c) => c.column_name));
 
-    switch (joinType) {
+    switch (_joinType) {
       case 'INNER':
         // INNER JOIN: Show all columns (required relationship)
         return columns;
 
       case 'LEFT':
         // LEFT JOIN: Show all columns (optional relationship)
-        columns = souceTable.columns;
+        columns = (_souceTable as { columns: Array<{ column_name: string }> })?.columns || [];
 
         return columns;
 
       case 'RIGHT':
         // RIGHT JOIN: Show all columns (reverse optional relationship)
-         columns = destinationTable.columns;
+         columns = (_destinationTable as { columns: Array<{ column_name: string }> })?.columns || [];
         return columns;
 
       default:
@@ -469,7 +469,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
     }
   };
 
-  const updateAdvancedColumnMapping = (index: number, field: string, value: any) => {
+  const updateAdvancedColumnMapping = (index: number, field: string, value: string | number | boolean | null) => {
     setNewAdvancedMapping(prev => ({
       ...prev,
       column_mappings: prev.column_mappings?.map((mapping, i) =>
@@ -529,8 +529,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
 
@@ -548,8 +548,8 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
       } else {
         setError(data.message);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
 
@@ -823,7 +823,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
                       <div className="w-24">
                         <select
                           value={mapping.transform || ''}
-                          onChange={(e) => updateColumnMapping(index, 'transform', e.target.value || undefined)}
+                          onChange={(e) => updateColumnMapping(index, 'transform', e.target.value || null)}
                           className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-black text-black-800"
                         >
                           <option value="">No transform</option>
@@ -846,7 +846,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
 
                   {(!newMapping.column_mappings || newMapping.column_mappings.length === 0) && (
                     <div className="text-center py-4 text-gray-500">
-                      No column mappings configured. Click "Add Mapping" to start.
+                      No column mappings configured. Click &quot;Add Mapping&quot; to start.
                     </div>
                   )}
                 </div>
@@ -1098,7 +1098,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-black text-black-800"
                           >
                             <option value="" className="text-black text-black-800">Select join column...</option>
-                            {getDestinationJoinTableColumns(join.table).map(col => (
+                            {getDestinationJoinTableColumns().map(col => (
                               <option key={col.column_name} value={col.column_name} className="text-black text-black-800">
                                 {col.column_name} ({col.data_type})
                               </option>
@@ -1206,7 +1206,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
                               <div className="w-20">
                                 <select
                                   value={column.transform || ''}
-                                  onChange={(e) => updateJoinColumn(joinIndex, columnIndex, 'transform', e.target.value || undefined)}
+                                  onChange={(e) => updateJoinColumn(joinIndex, columnIndex, 'transform', e.target.value || null)}
                                   className="w-full px-2 py-1 border border-gray-300 rounded text-xs  text-black text-black-800"
                                 >
                                   <option value="">No transform</option>
@@ -1233,7 +1233,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
 
                   {(!newAdvancedMapping.joins || newAdvancedMapping.joins.length === 0) && (
                     <div className="text-center py-4 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                      No JOINs configured. Click "Add JOIN" to join with related tables.
+                      No JOINs configured. Click &quot;Add JOIN&quot; to join with related tables.
                     </div>
                   )}
                 </div>
@@ -1293,7 +1293,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
                       <div className="w-24">
                         <select
                           value={mapping.transform || ''}
-                          onChange={(e) => updateAdvancedColumnMapping(index, 'transform', e.target.value || undefined)}
+                          onChange={(e) => updateAdvancedColumnMapping(index, 'transform', e.target.value || null)}
                           className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-black text-black-800"
                         >
                           <option value="" className="text-black text-black-800">No transform</option>
@@ -1316,7 +1316,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
 
                   {(!newAdvancedMapping.column_mappings || newAdvancedMapping.column_mappings.length === 0) && (
                     <div className="text-center py-4 text-gray-500">
-                      No column mappings configured. Click "Add Mapping" to start.
+                      No column mappings configured. Click &quot;Add Mapping&quot; to start.
                     </div>
                   )}
                 </div>

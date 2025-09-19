@@ -1,4 +1,4 @@
-import { DataSourceType, DataSourceTypeInfo, DataSourceFormField, DataSourceCapabilities, ConnectionConfig } from '../types';
+import { DataSourceType, DataSourceTypeInfo, ConnectionConfig } from '../types';
 
 export const DATA_SOURCE_CONFIGS: Record<DataSourceType, DataSourceTypeInfo> = {
   [DataSourceType.POSTGRESQL]: {
@@ -618,7 +618,7 @@ export const getDataSourcesByCategory = () => {
 
 export const createDefaultConfig = (type: DataSourceType): Partial<ConnectionConfig> => {
   const config = getDataSourceConfig(type);
-  const defaultConfig: any = {
+  const defaultConfig: Partial<ConnectionConfig> = {
     type,
     name: `${config.name} Connection`
   };

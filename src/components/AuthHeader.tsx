@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { User, LogOut, Settings, Shield, ChevronDown } from 'lucide-react';
 
+
 interface AuthHeaderProps {
   className?: string;
 }
@@ -14,9 +15,9 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({ className = '' }) => {
     return null;
   }
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setShowDropdown(false);
-    await logout();
+    logout();
   };
 
   const getRoleIcon = () => {
@@ -147,7 +148,7 @@ export const CompactAuthHeader: React.FC<AuthHeaderProps> = ({ className = '' })
         </div>
         <span className="text-sm text-gray-700">{user.username}</span>
         {user.role === 'admin' && (
-          <Shield className="h-3 w-3 text-yellow-500" title="Admin" />
+          <Shield className="h-3 w-3 text-yellow-500"  aria-label="Admin" />
         )}
       </div>
       

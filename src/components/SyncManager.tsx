@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RefreshCw, Plus, Trash2, Database, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Play, RefreshCw, Plus, Trash2, Database, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import styles from './SyncManager.module.css';
 import { MappingManager } from './MappingManager';
 
@@ -25,11 +25,7 @@ interface ColumnInfo {
   is_primary_key?: boolean;
 }
 
-interface TableInfo {
-  table_name: string;
-  columns: ColumnInfo[];
-  row_count?: number;
-}
+
 
 // The API returns tables as: { [tableName]: ColumnInfo[] }
 type TablesResponse = Record<string, ColumnInfo[]>;
@@ -215,7 +211,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
 
       {/* Tab Content */}
       {activeTab === 'advanced' && (
-        <MappingManager onMappingExecuted={(result) => {
+        <MappingManager onMappingExecuted={() => {
           // Refresh sync status when mapping is executed
           fetchSyncStatus();
         }} />

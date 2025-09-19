@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, AuthContextType, LoginResponse, RegisterRequest } from '../types';
+import { API_BASE_URL } from '@/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -46,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyToken = async (token: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://localhost:8080/api/auth/verify', {
+      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -65,7 +66,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -101,7 +102,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      const response = await fetch('http://localhost:8080/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -137,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Call logout endpoint if we have a token
       if (token) {
-        await fetch('http://localhost:8080/api/auth/logout', {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -186,7 +187,7 @@ export const useAuth = (): AuthContextType => {
 export const withAuth = <P extends object>(
   Component: React.ComponentType<P>
 ): React.FC<P> => {
-  return (props: P) => {
+  const WrappedComponent = (props: P) => {
     const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
@@ -205,6 +206,9 @@ export const withAuth = <P extends object>(
 
     return <Component {...props} />;
   };
+
+  WrappedComponent.displayName = `withAuth(${Component.displayName || Component.name})`;
+  return WrappedComponent;
 };
 
 // Hook to get authenticated API headers

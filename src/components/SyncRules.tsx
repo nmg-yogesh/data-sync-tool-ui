@@ -24,6 +24,8 @@ const SyncRules: React.FC<Props> = ({
   onDeleteRule,
 }) => {
   const sourceConnected = !!connectionStatus?.source?.connected;
+  const hasSourceTables = Object.keys(sourceTables).length > 0;
+  const showTableDropdown = sourceConnected || hasSourceTables;
 
   return (
     <div className="space-y-6">
@@ -33,7 +35,7 @@ const SyncRules: React.FC<Props> = ({
           <h2 className="text-xl font-semibold text-gray-900">Add Sync Rule</h2>
         </div>
         <div className="p-6">
-          {!sourceConnected ? (
+          {!showTableDropdown ? (
             <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-yellow-600" />

@@ -1,4 +1,5 @@
 export type DBType = 'source' | 'destination';
+export type TabType = "connections" | "dashboard" | "sync-rules" | "tables" | "bulk-transfer";
 
 // Enhanced types for multi-source support
 export enum DataSourceType {
@@ -25,7 +26,7 @@ export type TablesMap = Record<string, ColumnInfo[]>;
 export interface ConnectionConfig {
   type: DataSourceType;
   name: string;
-  [key: string]: any; // Allow adapter-specific configuration
+  [key: string]: string | number | boolean | DataSourceType | null | undefined; // Allow adapter-specific configuration
 }
 
 export interface PostgreSQLConfig extends ConnectionConfig {
@@ -112,7 +113,7 @@ export interface ConnectionStatus {
 export interface PublicConnectionConfig {
   name: string;
   type: DataSourceType;
-  [key: string]: any; // Allow adapter-specific fields, but password will be masked
+  [key: string]: string | DataSourceType; // Allow adapter-specific fields, but password will be masked
 }
 
 export interface SyncStatus {
@@ -143,7 +144,7 @@ export interface ColumnMapping {
   source_column: string;
   destination_column: string;
   transform?: string; // Optional transformation function
-  default_value?: any; // Default value if source is null
+  default_value?: string | number | boolean | null; // Default value if source is null
 }
 
 export interface JoinConfig {
@@ -259,10 +260,10 @@ export interface AuthContextType {
 // Legacy interface for backward compatibility
 export interface LegacyConnectionConfig {
   name: string;
-  host: string;
-  port: number;
-  database: string;
-  user: string;
+  host?: string;
+  port?: number;
+  database?: string;
+  user?: string;
   password?: string;
 }
 
@@ -288,7 +289,7 @@ export interface ConfigurationSchemaResponse {
     properties: Record<string, {
       type: string;
       description: string;
-      default?: any;
+      default?: string | number | boolean | null;
       enum?: string[];
     }>;
   };
@@ -300,7 +301,7 @@ export interface DataSourceFormField {
   type: 'text' | 'number' | 'password' | 'boolean' | 'select' | 'textarea';
   required: boolean;
   description?: string;
-  defaultValue?: any;
+  defaultValue?: string | number | boolean | null;
   options?: { value: string; label: string; }[];
   placeholder?: string;
   dependsOn?: string; // Field name that this field depends on

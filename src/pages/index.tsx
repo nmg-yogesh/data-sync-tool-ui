@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth, withAuth } from '../contexts/AuthContext';
+import { withAuth } from '../contexts/AuthContext';
 import { AuthHeader } from '../components/AuthHeader';
 import StatusCards from '../components/StatusCards';
 import ControlPanel from '../components/ControlPanel';
@@ -10,7 +10,7 @@ import Dashboard from '../components/Dashboard';
 import SyncRules from '../components/SyncRules';
 import TablesView from '../components/TablesView';
 import { BulkTransferManager } from '../components/BulkTransferManager';
-import { Database, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 import { Api } from '../api';
 import {
@@ -21,6 +21,7 @@ import {
   SyncStatus,
   TablesMap,
   TestResult,
+  TabType,
 } from '../types';
 
 const DatabaseSyncUI: React.FC = () => {
@@ -138,8 +139,8 @@ const DatabaseSyncUI: React.FC = () => {
       const result = await Api.testConnection(config);
       setTestResults((prev) => ({ ...prev, [type]: result }));
       return result;
-    } catch (error: any) {
-      const err: TestResult = { success: false, message: error.message || 'Failed to test connection' };
+    } catch (error: unknown) {
+      const err: TestResult = { success: false, message: error instanceof Error ? error.message : 'Failed to test connection' };
       setTestResults((prev) => ({ ...prev, [type]: err }));
       return err;
     } finally {
@@ -157,8 +158,8 @@ const DatabaseSyncUI: React.FC = () => {
       } else {
         alert(`Error saving ${type} connection: ${result.message}`);
       }
-    } catch (error: any) {
-      alert(`Error saving ${type} connection: ${error.message}`);
+    } catch (error: unknown) {
+      alert(`Error saving ${type} connection: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -174,8 +175,8 @@ const DatabaseSyncUI: React.FC = () => {
       const result = await Api.startSync();
       if (result.message) alert(result.message);
       if (result.error) alert(`Error starting sync: ${result.error}`);
-    } catch (error: any) {
-      alert(`Error starting sync: ${error.message}`);
+    } catch (error: unknown) {
+      alert(`Error starting sync: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
       refreshStatusOnly();
@@ -253,8 +254,14 @@ const DatabaseSyncUI: React.FC = () => {
           onRefresh={refreshStatusOnly}
         />
 
-        <Tabs active={activeTab} setActive={(t) => setActiveTab(t as any)} />
-
+        <Tabs
+          active={activeTab}
+          setActive={(tab: string) => {
+            if (["connections", "dashboard", "sync-rules", "tables", "bulk-transfer"].includes(tab)) {
+              setActiveTab(tab as TabType);
+            }
+          }}
+        />
         {activeTab === 'connections' && (
           <div className="space-y-6">
             <ConnectionForm
