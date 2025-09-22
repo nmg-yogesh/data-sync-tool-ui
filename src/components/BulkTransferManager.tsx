@@ -5,6 +5,7 @@ import {
   SourceTableInfo, 
   DestinationTableStatus 
 } from '../types';
+import { API_BASE_URL } from '@/api';
 
 interface BulkTransferManagerProps {
   onClose?: () => void;
@@ -28,7 +29,7 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
   const loadSourceTables = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/bulk-transfer/source-tables');
+      const response = await fetch(`${API_BASE_URL}/bulk-transfer/source-tables`);
       const data = await response.json();
       
       if (data.success) {
@@ -45,7 +46,7 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
 
   const checkDestinationTables = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/bulk-transfer/check-destination', {
+      const response = await fetch(`${API_BASE_URL}/bulk-transfer/check-destination`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tables: selectedTables })
@@ -75,7 +76,7 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
         ...transferOptions
       };
 
-      const response = await fetch('http://localhost:8080/api/bulk-transfer/start', {
+      const response = await fetch(`${API_BASE_URL}/bulk-transfer/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request)
@@ -99,7 +100,7 @@ export const BulkTransferManager: React.FC<BulkTransferManagerProps> = ({ onClos
 
   const pollTransferProgress = async (transferId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/bulk-transfer/progress/${transferId}`);
+      const response = await fetch(`${API_BASE_URL}/bulk-transfer/progress/${transferId}`);
       const data = await response.json();
       
       if (data.success) {

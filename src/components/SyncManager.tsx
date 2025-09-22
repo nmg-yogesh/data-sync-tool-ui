@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, RefreshCw, Plus, Trash2, Database, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import styles from './SyncManager.module.css';
 import { MappingManager } from './MappingManager';
+import { API_BASE_URL } from '@/api';
 
 interface SyncRule {
   table_name: string;
@@ -50,7 +51,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
   // Fetch sync status
   const fetchSyncStatus = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/sync/status');
+      const response = await fetch(`${API_BASE_URL}/sync/status`);
       const data = await response.json();
       setSyncStatus(data);
     } catch (error) {
@@ -61,7 +62,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
   // Fetch sync rules
   const fetchSyncRules = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/sync/rules');
+      const response = await fetch(`${API_BASE_URL}/sync/rules`);
       const data = await response.json();
       setSyncRules(data);
     } catch (error) {
@@ -72,7 +73,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
   // Fetch source tables
   const fetchSourceTables = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/tables?type=source');
+      const response = await fetch(`${API_BASE_URL}/tables?type=source`);
       const data = await response.json();
       console.log('Source tables data:', data); // Debug log
       setSourceTables(data);
@@ -85,7 +86,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
   const startSync = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/sync/start', {
+      const response = await fetch(`${API_BASE_URL}/sync/start`, {
         method: 'POST'
       });
       const data = await response.json();
@@ -106,7 +107,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
     if (!newRule.table_name || !newRule.primary_key) return;
 
     try {
-      const response = await fetch('http://localhost:8080/api/sync/rules', {
+      const response = await fetch(`${API_BASE_URL}/sync/rules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newRule)
@@ -125,7 +126,7 @@ export const SyncManager: React.FC<SyncManagerProps> = ({ isVisible }) => {
   // Delete sync rule
   const deleteSyncRule = async (tableName: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/sync/rules/${tableName}`, {
+      const response = await fetch(`${API_BASE_URL}/sync/rules/${tableName}`, {
         method: 'DELETE'
       });
 

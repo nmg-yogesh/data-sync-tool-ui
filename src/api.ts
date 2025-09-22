@@ -12,7 +12,8 @@ import {
   ConfigurationSchemaResponse
 } from './types';
 
-export const API_BASE_URL = 'http://localhost:8080/api';
+console.log(process.env.NODE_ENV);
+export const API_BASE_URL = process.env.NODE_ENV === 'production' ? 'http://192.168.101.152/api' : 'http://localhost:8080/api';
 
 async function json<T>(res: Response): Promise<T> {
   const data = await res.json();

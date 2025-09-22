@@ -54,7 +54,7 @@ export const MappingManager: React.FC<MappingManagerProps> = ({ onMappingExecute
     loadSourceTables();
     loadDestinationTables();
   }, []);
-
+ 
   const loadSourceTables = async () => {
     try {
       console.log('Loading source tables from:', `${API_BASE_URL}/mappings/source/tables`);
